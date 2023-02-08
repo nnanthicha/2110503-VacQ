@@ -1,17 +1,23 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const connectDB = require("./config/db");
 
 // load dotenv vars
 dotenv.config({ path: "./config/config.env" });
+
+// Connect to database
+connectDB();
 
 // route file
 const hospitals = require("./routes/hospitals");
 
 const app = express();
+// Body parser
+app.use(express.json());
 app.use("/api/v1/hospitals", hospitals);
 
 const PORT = process.env.PORT || 5000;
-app.listen(
+const server = app.listen(
   PORT,
   console.log(
     "Server running in ",
@@ -20,3 +26,10 @@ app.listen(
     PORT
   )
 );
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err, promise) => {
+  console.log(`Error: ${err.message}`);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
