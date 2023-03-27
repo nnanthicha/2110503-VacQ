@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { register, reset } from "../features/auth/authSlice";
 
 function Register() {
   const [formData, setFromData] = useState({
@@ -8,9 +11,28 @@ function Register() {
     email: "",
     password: "",
     password2: "",
+    role: "user",
   });
+  const { name, email, password, password2, role } = formData;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
+  const { user, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => {
+      return state.auth;
+    }
+  );
 
-  const { name, email, password, password2 } = formData;
+  useEffect(() => {
+    if (isError) {
+      toast.error(message);
+    }
+    // redirect when logged in
+    if (isSuccess) {
+      navigate("/");
+    }
+    dispatch(reset());
+  }, [dispatch, isError, isSuccess, message, navigate, user]);
 
   const onChange = (e) => {
     setFromData((prevState) => ({
@@ -23,6 +45,9 @@ function Register() {
     e.preventDefault();
     if (password !== password2) {
       toast.error("Passwords do not match");
+    } else {
+      const userData = { name, email, password, role };
+      dispatch(register(userData));
     }
   };
 
@@ -82,6 +107,18 @@ function Register() {
               value={password2}
               onChange={onChange}
               placeholder="Confirm your password"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <input
+              type="text"
+              className="form-control"
+              id="role"
+              name="role"
+              value={role}
+              onChange={onChange}
+              placeholder="Enter your role"
               required
             />
           </div>

@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaSignInAlt } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import {reset, login} from "../features/auth/authSlice"
 
 function Login() {
   const [formData, setFromData] = useState({
@@ -8,6 +12,25 @@ function Login() {
   });
 
   const { email, password } = formData;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
+  const { user, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => {
+      return state.auth;
+    }
+  );
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(message);
+    }
+    // redirect when logged in
+    if (isSuccess) {
+      navigate("/");
+    }
+    dispatch(reset());
+  }, [dispatch, isError, isSuccess, message, navigate, user]);
 
   const onChange = (e) => {
     setFromData((prevState) => ({
@@ -18,6 +41,8 @@ function Login() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+    const userData = {email, password};
+    dispatch(login(userData));
   };
 
   return (
